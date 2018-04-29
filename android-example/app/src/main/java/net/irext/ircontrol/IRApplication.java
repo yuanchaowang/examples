@@ -22,7 +22,7 @@ public class IRApplication extends com.activeandroid.app.Application {
 
     private static final String TAG = IRApplication.class.getSimpleName();
 
-    private static final String ADDRESS = "http://irext.net";
+    private static final String ADDRESS = "https://irext.net";
     private static final String APP_NAME = "/irext-server";
 
     public WebAPIs mWeAPIs = WebAPIs.getInstance(ADDRESS, APP_NAME);
@@ -31,8 +31,8 @@ public class IRApplication extends com.activeandroid.app.Application {
 
     private SignInCallback mSignInCallback = new SignInCallback() {
         @Override
-        public void onSignInSuccess(UserApp admin) {
-            mUserApp = admin;
+        public void onSignInSuccess(UserApp userApp) {
+            mUserApp = userApp;
         }
 
         @Override
@@ -46,7 +46,7 @@ public class IRApplication extends com.activeandroid.app.Application {
         }
     };
 
-    public UserApp getAdmin() {
+    public UserApp getUserApp() {
         return mUserApp;
     }
 
@@ -64,6 +64,8 @@ public class IRApplication extends com.activeandroid.app.Application {
                 mWeAPIs.signIn(IRApplication.this, mSignInCallback);
                 if (null != mUserApp) {
                     Log.d(TAG, "signIn response : " + mUserApp.getId() + ", " + mUserApp.getToken());
+                } else {
+                    Log.w(TAG, "signIn failed");
                 }
             }
         }.start();

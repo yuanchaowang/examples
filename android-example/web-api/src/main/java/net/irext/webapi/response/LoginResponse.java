@@ -1,7 +1,6 @@
 package net.irext.webapi.response;
 
 import net.irext.webapi.model.UserApp;
-
 /**
  * Filename:       LoginResponse.java
  * Revised:        Date: 2017-03-31

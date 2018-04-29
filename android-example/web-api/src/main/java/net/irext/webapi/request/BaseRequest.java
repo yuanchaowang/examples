@@ -14,11 +14,11 @@ import com.google.gson.Gson;
  */
 public class BaseRequest {
 
-    private int adminId;
+    private int id;
     private String token;
 
-    public BaseRequest(int adminId, String token) {
-        this.adminId = adminId;
+    public BaseRequest(int id, String token) {
+        this.id = id;
         this.token = token;
     }
 
@@ -26,12 +26,12 @@ public class BaseRequest {
 
     }
 
-    public int getAdminId() {
-        return adminId;
+    public int getId() {
+        return id;
     }
 
-    public void setAdminId(int adminId) {
-        this.adminId = adminId;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getToken() {

@@ -23,7 +23,7 @@ import java.util.List;
 public class WebAPICallbacks {
 
     public interface SignInCallback {
-        void onSignInSuccess(UserApp admin);
+        void onSignInSuccess(UserApp userApp);
         void onSignInFailed();
         void onSignInError();
     }
