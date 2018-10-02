@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "DecodeTestWin.h"
-#include "irda_decode.h"
+#include "ir_decode.h"
 
 using namespace std;
 
@@ -15,14 +15,13 @@ UINT8 *binary_content = NULL;
 CWinApp theApp;
 HINSTANCE hInDecodeDll = NULL;
 
-remote_ac_status_t ac_status;
+t_remote_ac_status ac_status;
 UINT16 user_data[USER_DATA_SIZE] = { 0 };
 
-typedef INT8(*lp_irda_ac_file_open) (char* file_name);
-typedef INT8(*lp_irda_ac_lib_open) (UINT8 *binary, UINT16 binary_length);
-typedef INT8(*lp_irda_ac_lib_close) (void);
-typedef INT8(*lp_irda_ac_lib_parse) (void);
-typedef UINT16(*lp_irda_ac_lib_control) (remote_ac_status_t ac_status, UINT16 *user_data, UINT8 function_code, BOOL change_wind_direction);
+typedef INT8(*lp_ir_file_open) (const UINT8 category, const UINT8 sub_category, const char* file_name);
+typedef INT8(*lp_ir_binary_open) (const UINT8 category, const UINT8 sub_category, UINT8* binary, UINT16 binary_length);
+typedef INT8(*lp_ir_decode) (UINT8 key_code, UINT16* user_data, t_remote_ac_status* ac_status, BOOL change_wind_direction);
+typedef INT8(*lp_ir_close) (void);
 
 typedef INT8(*lp_get_temperature_range) (UINT8 ac_mode, INT8* temp_min, INT8* temp_max);
 typedef INT8(*lp_get_supported_mode) (UINT8* supported_mode);
@@ -30,31 +29,16 @@ typedef INT8(*lp_get_supported_wind_speed) (UINT8 ac_mode, UINT8* supported_wind
 typedef INT8(*lp_get_supported_swing) (UINT8 ac_mode, UINT8* supported_swing);
 typedef INT8(*lp_get_supported_wind_direction) (UINT8* supported_wind_direction);
 
-typedef INT8(*lp_irda_tv_file_open) (char* file_name);
-typedef INT8(*lp_irda_tv_lib_open) (UINT8 *binary, UINT16 binary_length);
-typedef INT8(*lp_irda_tv_lib_parse) (UINT8 irda_hex_encode);
-typedef UINT16(*lp_irda_tv_lib_control) (UINT8 key_code, UINT16* user_data);
-typedef INT8(*lp_irda_tv_lib_close) (void);
-
-
-lp_irda_ac_file_open IRDAACFileOpen;
-lp_irda_ac_lib_open IRDAACLibOpen;
-lp_irda_ac_lib_parse IRDAACLibParse;
-lp_irda_ac_lib_control IRDAACLibControl;
-lp_irda_ac_lib_close IRDAACLibClose;
+lp_ir_file_open IRFileOpen;
+lp_ir_binary_open IRBinaryOpen;
+lp_ir_decode IRDecode;
+lp_ir_close IRClose;
 
 lp_get_supported_mode GetSupportedMode;
 lp_get_supported_swing GetSupportedSwing;
 lp_get_supported_wind_speed GetSupportedWindSpeed;
 lp_get_supported_wind_direction GetSupportedWindDirection;
 lp_get_temperature_range GetTemperatureRange;
-
-lp_irda_tv_file_open IRDATVFileOpen;
-lp_irda_tv_lib_open IRDATVLibOpen;
-lp_irda_tv_lib_parse IRDATVLibParse;
-lp_irda_tv_lib_control IRDATVLibControl;
-lp_irda_tv_lib_close IRDATVLibClose;
-
 
 INT8 decode_as_ac(char* file_name)
 {
@@ -74,27 +58,21 @@ INT8 decode_as_ac(char* file_name)
 	BOOL need_control = TRUE;
 
 	// init air conditioner status
-	ac_status.acDisplay = 0;
-	ac_status.acSleep = 0;
-	ac_status.acTimer = 0;
-	ac_status.acPower = AC_POWER_OFF;
-	ac_status.acMode = AC_MODE_COOL;
-	ac_status.acTemp = AC_TEMP_20;
-	ac_status.acWindDir = AC_SWING_ON;
-	ac_status.acWindSpeed = AC_WS_AUTO;
+	ac_status.ac_display = 0;
+	ac_status.ac_sleep = 0;
+	ac_status.ac_timer = 0;
+	ac_status.ac_power = AC_POWER_OFF;
+	ac_status.ac_mode = AC_MODE_COOL;
+	ac_status.ac_temp = AC_TEMP_20;
+	ac_status.ac_wind_dir = AC_SWING_ON;
+	ac_status.ac_wind_speed = AC_WS_AUTO;
 
-	if (IR_DECODE_FAILED == IRDAACFileOpen(file_name))
+	if (IR_DECODE_FAILED == IRFileOpen(0, 0, file_name))
 	{
-		IRDAACLibClose();
+		IRClose();
 		return IR_DECODE_FAILED;
 	}
 
-	if (IR_DECODE_FAILED == IRDAACLibParse())
-	{
-		IR_PRINTF("ac lib parse failed\n");
-		IRDAACLibClose();
-		return IR_DECODE_FAILED;
-	}
 	do
 	{
 		in_char = getchar();
@@ -105,73 +83,73 @@ INT8 decode_as_ac(char* file_name)
 		case 'w':
 		case 'W':
 			// temperature plus
-			ac_status.acTemp = (ac_status.acTemp == AC_TEMP_30) ? AC_TEMP_30 : (ac_status.acTemp + 1);
+			ac_status.ac_temp = (t_ac_temperature)((ac_status.ac_temp == AC_TEMP_30) ? AC_TEMP_30 : (ac_status.ac_temp + 1));
 			function_code = AC_FUNCTION_TEMPERATURE_UP;
 			break;
 		case 's':
 		case 'S':
-			ac_status.acTemp = (ac_status.acTemp == AC_TEMP_16) ? AC_TEMP_16 : (ac_status.acTemp - 1);
+			ac_status.ac_temp = (t_ac_temperature)((ac_status.ac_temp == AC_TEMP_16) ? AC_TEMP_16 : (ac_status.ac_temp - 1));
 			function_code = AC_FUNCTION_TEMPERATURE_DOWN;
 			// temperature minus
 			break;
 		case 'a':
 		case 'A':
-			++ac_status.acWindSpeed;
-			ac_status.acWindSpeed = ac_status.acWindSpeed % AC_WS_MAX;
+			ac_status.ac_wind_speed = (t_ac_wind_speed) (ac_status.ac_wind_speed + 1);
+			ac_status.ac_wind_speed = (t_ac_wind_speed) (ac_status.ac_wind_speed % AC_WS_MAX);
 			function_code = AC_FUNCTION_WIND_SPEED;
 			// wind speed loop
 			break;
 		case 'd':
 		case 'D':
-			ac_status.acWindDir = (ac_status.acWindDir == 0) ? 1 : 0;
+			ac_status.ac_wind_dir = (t_ac_swing)((ac_status.ac_wind_dir == 0) ? 1 : 0);
 			function_code = AC_FUNCTION_WIND_SWING;
 			// wind swing loop
 			break;
 		case 'q':
 		case 'Q':
-			++ac_status.acMode;
-			ac_status.acMode = ac_status.acMode % AC_MODE_MAX;
+			ac_status.ac_mode = (t_ac_mode)(ac_status.ac_mode + 1);
+			ac_status.ac_mode = (t_ac_mode) (ac_status.ac_mode % AC_MODE_MAX);
 			function_code = AC_FUNCTION_MODE;
 			break;
 		case '1':
 			// turn on
-			ac_status.acPower = AC_POWER_ON;
+			ac_status.ac_power = AC_POWER_ON;
 			function_code = AC_FUNCTION_POWER;
 			break;
 		case '2':
 			// turn off
-			ac_status.acPower = AC_POWER_OFF;
+			ac_status.ac_power = AC_POWER_OFF;
 			// FUNCTION MAX refers to power off
 			// function_code = AC_FUNCTION_POWER;
 			break;
 		case '3':
 			if (IR_DECODE_SUCCEEDED == GetSupportedMode(&supported_mode))
 			{
-				IR_PRINTF("supported mode = %02X\n", supported_mode);
+				ir_printf("supported mode = %02X\n", supported_mode);
 			}
 			need_control = FALSE;
 			break;
 
 		case '4':
-			if (IR_DECODE_SUCCEEDED == GetSupportedSwing(ac_status.acMode, &supported_swing))
+			if (IR_DECODE_SUCCEEDED == GetSupportedSwing(ac_status.ac_mode, &supported_swing))
 			{
-				IR_PRINTF("supported swing in %d = %02X\n", ac_status.acMode, supported_swing);
+				ir_printf("supported swing in %d = %02X\n", ac_status.ac_mode, supported_swing);
 			}
 			need_control = FALSE;
 			break;
 		case '5':
-			if (IR_DECODE_SUCCEEDED == GetSupportedWindSpeed(ac_status.acMode, &supported_speed))
+			if (IR_DECODE_SUCCEEDED == GetSupportedWindSpeed(ac_status.ac_mode, &supported_speed))
 			{
-				IR_PRINTF("supported wind speed in %d = %02X\n", ac_status.acMode, supported_speed);
+				ir_printf("supported wind speed in %d = %02X\n", ac_status.ac_mode, supported_speed);
 			}
 			need_control = FALSE;
 			break;
 
 		case '6':
-			if (IR_DECODE_SUCCEEDED == GetTemperatureRange(ac_status.acMode, &min_temperature, &max_temperature))
+			if (IR_DECODE_SUCCEEDED == GetTemperatureRange(ac_status.ac_mode, &min_temperature, &max_temperature))
 			{
-				IR_PRINTF("supported temperature range in mode %d = %d, %d\n",
-					ac_status.acMode, min_temperature, max_temperature);
+				ir_printf("supported temperature range in mode %d = %d, %d\n",
+					ac_status.ac_mode, min_temperature, max_temperature);
 			}
 			need_control = FALSE;
 			break;
@@ -183,21 +161,21 @@ INT8 decode_as_ac(char* file_name)
 
 		if (TRUE == op_match && TRUE == need_control)
 		{
-			IR_PRINTF("switch AC to power = %d, mode = %d, temp = %d, speed = %d, swing = %d\n",
-				ac_status.acPower,
-				ac_status.acMode,
-				ac_status.acTemp,
-				ac_status.acWindSpeed,
-				ac_status.acWindDir
+			ir_printf("switch AC to power = %d, mode = %d, temp = %d, speed = %d, swing = %d\n",
+				ac_status.ac_power,
+				ac_status.ac_mode,
+				ac_status.ac_temp,
+				ac_status.ac_wind_speed,
+				ac_status.ac_wind_dir
 				);
-			IRDAACLibControl(ac_status, user_data, function_code, TRUE);
+			IRDecode(function_code, user_data, &ac_status, TRUE);
 		}
 	} while ('0' != in_char);
 
-	IRDAACLibClose();
+	IRClose();
 
 	// free binary buffer
-	irda_free(binary_content);
+	ir_free(binary_content);
 	binary_length = 0;
 
 	return IR_DECODE_SUCCEEDED;
@@ -210,31 +188,27 @@ INT8 decode_as_tv(char *file_name, UINT8 irda_hex_encode)
 	int key_code = -1;
 	int count = 0;
 
-	if (IR_DECODE_FAILED == IRDATVFileOpen(file_name))
+	if (IR_DECODE_FAILED == IRFileOpen(1, 1, file_name))
 	{
 		return IR_DECODE_FAILED;
 	}
 
-	if (IR_DECODE_FAILED == IRDATVLibParse(irda_hex_encode))
-	{
-		return IR_DECODE_FAILED;
-	}
 	do
 	{
 		in_char = getchar();
 		if (in_char >= '0' && in_char <= '9')
 		{
 			key_code = in_char - '0';
-			IRDATVLibControl(key_code, user_data);
+			IRDecode(key_code, user_data, NULL, FALSE);
 		}
 		else if (in_char >= 'a' && in_char <= 'f')
 		{
 			key_code = 10 + (in_char - 'a');
-			IRDATVLibControl(key_code, user_data);
+			IRDecode(key_code, user_data, NULL, FALSE);
 		}
 		else if (in_char == 'q')
 		{
-			IRDATVLibClose();
+			IRClose();
 		}
 		else
 		{
@@ -243,7 +217,7 @@ INT8 decode_as_tv(char *file_name, UINT8 irda_hex_encode)
 	} while ('Q' != in_char);
 
 	// free binary buffer
-	irda_free(binary_content);
+	ir_free(binary_content);
 	binary_length = 0;
 
 	return IR_DECODE_SUCCEEDED;
@@ -267,12 +241,11 @@ int main(int argc, char *argv[])
 			hInDecodeDll = LoadLibrary(_T("ir_decoder.dll"));
 			if (NULL != hInDecodeDll)
 			{
-				IR_PRINTF("load library successfully\n");
-				IRDAACFileOpen = (lp_irda_ac_file_open)GetProcAddress(hInDecodeDll, "irda_ac_file_open");
-				IRDAACLibOpen = (lp_irda_ac_lib_open)GetProcAddress(hInDecodeDll, "irda_ac_lib_open");
-				IRDAACLibParse = (lp_irda_ac_lib_parse)GetProcAddress(hInDecodeDll, "irda_ac_lib_parse");
-				IRDAACLibControl = (lp_irda_ac_lib_control)GetProcAddress(hInDecodeDll, "irda_ac_lib_control");
-				IRDAACLibClose = (lp_irda_ac_lib_close)GetProcAddress(hInDecodeDll, "irda_ac_lib_close");
+				ir_printf("load library successfully\n");
+				IRFileOpen = (lp_ir_file_open)GetProcAddress(hInDecodeDll, "ir_file_open");
+				IRBinaryOpen = (lp_ir_binary_open)GetProcAddress(hInDecodeDll, "ir_binary_open");
+				IRDecode = (lp_ir_decode)GetProcAddress(hInDecodeDll, "ir_decode");
+				IRClose = (lp_ir_close)GetProcAddress(hInDecodeDll, "ir_close");
 
 				GetSupportedMode = (lp_get_supported_mode)GetProcAddress(hInDecodeDll, "get_supported_mode");
 				GetSupportedSwing = (lp_get_supported_swing)GetProcAddress(hInDecodeDll, "get_supported_swing");
@@ -280,39 +253,33 @@ int main(int argc, char *argv[])
 				GetSupportedWindDirection = (lp_get_supported_wind_direction)GetProcAddress(hInDecodeDll, "get_supported_wind_direction");
 				GetTemperatureRange = (lp_get_temperature_range)GetProcAddress(hInDecodeDll, "get_temperature_range");
 
-				IRDATVFileOpen = (lp_irda_tv_file_open)GetProcAddress(hInDecodeDll, "irda_tv_file_open");
-				IRDATVLibOpen = (lp_irda_tv_lib_open)GetProcAddress(hInDecodeDll, "irda_tv_lib_open");
-				IRDATVLibParse = (lp_irda_tv_lib_parse)GetProcAddress(hInDecodeDll, "irda_tv_lib_parse");
-				IRDATVLibControl = (lp_irda_tv_lib_control)GetProcAddress(hInDecodeDll, "irda_tv_lib_control");
-				IRDATVLibClose = (lp_irda_tv_lib_close)GetProcAddress(hInDecodeDll, "irda_tv_lib_close");
-
 				char function = '0';
 				UINT8 irda_hex_encode = 0;
 
 				if (4 != argc)
 				{
-					IR_PRINTF("number of args error !\n");
+					ir_printf("number of args error !\n");
 					return -1;
 				}
 
 				function = argv[1][0];
 				irda_hex_encode = (UINT8)(argv[3][0] - '0');
-				IR_PRINTF("decode functionality = %c\n", function);
+				ir_printf("decode functionality = %c\n", function);
 
 				switch (function)
 				{
 				case '0':
-					IR_PRINTF("decode binary file as AC\n");
+					ir_printf("decode binary file as AC\n");
 					decode_as_ac(argv[2]);
 					break;
 
 				case '1':
-					IR_PRINTF("decode binary file as TV : %d\n", irda_hex_encode);
+					ir_printf("decode binary file as TV : %d\n", irda_hex_encode);
 					decode_as_tv(argv[2], irda_hex_encode);
 					break;
 
 				default:
-					IR_PRINTF("decode functionality error !\n");
+					ir_printf("decode functionality error !\n");
 					break;
 				}
 
@@ -320,7 +287,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				IR_PRINTF("load library failed\n");
+				ir_printf("load library failed\n");
 			}
 		}
 	}

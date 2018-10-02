@@ -30,10 +30,16 @@
     <ClInclude Include="DecodeTestWin.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="irda_decode.h">
+    <ClInclude Include="ir_decode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\straw\Desktop\irda_defs.h">
+    <ClInclude Include="ir_defs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_ac_control.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ir_tv_control.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
