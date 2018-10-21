@@ -21,8 +21,12 @@ Revision log:
 
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
-struct tag_head *tags;
 
+#if defined USE_DYNAMIC_TAG
+struct tag_head *tags;
+#else
+struct tag_head tags[TAG_COUNT_FOR_PROTOCOL];
+#endif
 
 UINT8 *ir_hex_code = NULL;
 UINT8 ir_hex_len = 0;
@@ -67,7 +71,7 @@ void noprint(const char *fmt, ...)
 }
 
 // pubic function definitions
-
+#if (!defined BOARD_51 && !defined BOARD_CC26XX)
 INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* file_name)
 {
     INT8 ret = IR_DECODE_SUCCEEDED;
@@ -111,7 +115,12 @@ INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* fi
         }
     }
 }
-
+#else
+INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* file_name)
+{
+    return IR_DECODE_SUCCESS;
+}
+#endif
 
 INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binary, UINT16 binary_length)
 {
@@ -263,7 +272,7 @@ static UINT16 ir_ac_lib_control(t_remote_ac_status ac_status, UINT16 *user_data,
     UINT16 time_length = 0;
 
 #if defined BOARD_PC
-    UINT8 i = 0;
+    UINT16 i = 0;
 #endif
 
     if (0 == context->default_code.len)
@@ -375,12 +384,15 @@ static UINT16 ir_ac_lib_control(t_remote_ac_status ac_status, UINT16 *user_data,
 
 static INT8 ir_ac_lib_close()
 {
+#if defined USE_DYNAMIC_TAG
     // free context
     if (NULL != tags)
     {
         ir_free(tags);
         tags = NULL;
     }
+#endif
+
     free_ac_context();
 
     return IR_DECODE_SUCCEEDED;
