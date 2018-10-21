@@ -19,6 +19,22 @@
 @REM 
 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\common\bin\cspybat" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\8051\bin\8051proc.dll" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\8051\bin\8051emu_cc.dll"  %1 --plugin "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\8051\bin\8051bat.dll" --backend -B "--proc_core" "plain" "--proc_code_model" "banked" "--proc_nr_virtual_regs" "8" "--proc_pdata_bank_reg_addr" "0x93" "--proc_dptr_nr_of" "1" "--proc_codebank_reg" "0x9F" "--proc_codebank_start" "0x8000" "--proc_codebank_end" "0xFFFF" "--proc_codebank_mask" "0xFF" "--proc_data_model" "large" "-p" "C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.0\8051\config\devices\Texas Instruments\ioCC2541F256.ddf" "--proc_exclude_exit_breakpoint" "--proc_driver" "chipcon" "--erase_flash" "--verify_download" "use_crc16" "--stack_overflow" "--number_of_banks" "4" 
+@echo off 
 
+if not "%~1" == "" goto debugFile 
 
+@echo on 
+
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\common\bin\cspybat" -f "D:\Project\Iot_Work\irext\examples\cc25xx-example\ti\BLE-CC254x\Projects\ble\SimpleBLEPeripheral-IREXT\CC2541DB\settings\SimpleBLEPeripheral.CC2541.general.xcl" --backend -f "D:\Project\Iot_Work\irext\examples\cc25xx-example\ti\BLE-CC254x\Projects\ble\SimpleBLEPeripheral-IREXT\CC2541DB\settings\SimpleBLEPeripheral.CC2541.driver.xcl" 
+
+@echo off 
+goto end 
+
+:debugFile 
+
+@echo on 
+
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.0\common\bin\cspybat" -f "D:\Project\Iot_Work\irext\examples\cc25xx-example\ti\BLE-CC254x\Projects\ble\SimpleBLEPeripheral-IREXT\CC2541DB\settings\SimpleBLEPeripheral.CC2541.general.xcl" "--debug_file=%~1" --backend -f "D:\Project\Iot_Work\irext\examples\cc25xx-example\ti\BLE-CC254x\Projects\ble\SimpleBLEPeripheral-IREXT\CC2541DB\settings\SimpleBLEPeripheral.CC2541.driver.xcl" 
+
+@echo off 
+:end

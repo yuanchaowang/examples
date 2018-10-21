@@ -9,15 +9,18 @@ Revision log:
 * 2017-01-03: created by strawmanbobi
 **************************************************************************************/
 
-#include <stdlib.h>
-
 #include "../include/ir_ac_binary_parse.h"
 #include "../include/ir_decode.h"
 
 UINT16 tag_head_offset = 0;
 
 extern struct ir_bin_buffer *p_ir_buffer;
-extern struct tag_head *tags;
+
+#if defined USE_DYNAMIC_TAG
+extern struct tag_head* tags;
+#else
+extern struct tag_head tags[];
+#endif
 
 UINT8 tag_count = 0;
 const UINT16 tag_index[TAG_COUNT_FOR_PROTOCOL] =
@@ -30,7 +33,11 @@ const UINT16 tag_index[TAG_COUNT_FOR_PROTOCOL] =
 INT8 binary_parse_offset()
 {
     int i = 0;
-    UINT16 *phead = (UINT16 *) &p_ir_buffer->data[1];
+#if defined BOARD_ESP8266
+	UINT8 *phead = (UINT8 *)&p_ir_buffer->data[1];
+#else
+	UINT16 *phead = (UINT16 *)&p_ir_buffer->data[1];
+#endif // BOARD_ESP8266
 
     tag_count = p_ir_buffer->data[0];
     if (TAG_COUNT_FOR_PROTOCOL != tag_count)
@@ -40,16 +47,29 @@ INT8 binary_parse_offset()
 
     tag_head_offset = (UINT16) ((tag_count << 1) + 1);
 
+#if defined USE_DYNAMIC_TAG
     tags = (t_tag_head *) ir_malloc(tag_count * sizeof(t_tag_head));
+
     if (NULL == tags)
     {
         return IR_DECODE_FAILED;
     }
+#endif
 
     for (i = 0; i < tag_count; i++)
     {
         tags[i].tag = tag_index[i];
+
+#if defined BOARD_STM8 && defined COMPILER_IAR
+        UINT16 offset = *(phead + i);
+        tags[i].offset = (offset >> 8) | (offset << 8);
+#elif defined BOARD_ESP8266
+        UINT16 tmp_a = *(phead + i * 2);
+        UINT16 tmp_b = *(phead + i * 2 + 1);
+        tags[i].offset = tmp_b << 8 | tmp_a;
+#else
         tags[i].offset = *(phead + i);
+#endif
 
         if (tags[i].offset == TAG_INVALID)
         {
@@ -96,7 +116,7 @@ INT8 binary_parse_len()
 
 void binary_tags_info()
 {
-#if defined BOARD_PC
+#if defined BOARD_PC && defined DEBUG
     UINT16 i = 0;
     for (i = 0; i < tag_count; i++)
     {
