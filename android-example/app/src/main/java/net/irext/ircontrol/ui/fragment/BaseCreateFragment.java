@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import net.irext.ircontrol.ui.activity.CreateActivity;
 import net.irext.ircontrol.utils.MessageUtil;
 
