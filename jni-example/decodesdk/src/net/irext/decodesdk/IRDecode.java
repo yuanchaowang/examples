@@ -3,9 +3,7 @@ package net.irext.decodesdk;
 import net.irext.decodesdk.bean.ACStatus;
 import net.irext.decodesdk.bean.TemperatureRange;
 import net.irext.decodesdk.utils.Constants;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.servlet.ServletContext;
 
 /**
  * Filename:       IRDecode.java
@@ -20,9 +18,6 @@ import javax.servlet.ServletContext;
 public class IRDecode {
 
     private static final String TAG = IRDecode.class.getSimpleName();
-
-    @Autowired
-    private static ServletContext context;
 
     private static Object mSync = new Object();
 
