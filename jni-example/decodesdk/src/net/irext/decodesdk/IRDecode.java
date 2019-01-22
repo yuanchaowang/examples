@@ -113,4 +113,25 @@ public class IRDecode {
         }
         return retSupportedSwing;
     }
+
+    public static void main(String[] args) {
+        int ret = 0;
+        System.out.println("This is IR decode test");
+        IRDecode irDecoder = IRDecode.getInstance();
+        if (Constants.ERROR_CODE_SUCCESS == irDecoder.irOpen(Constants.CategoryID.TV.getValue(),
+                1,
+                "/home/strawmanbobi/Downloads/test.bin")) {
+            int[] decoded =
+                    irDecoder.decodeBinary(1, null, 0);
+            for (int i = 0; i < decoded.length; i++) {
+                System.out.print(decoded[i]);
+                if (i != decoded.length - 1) {
+                    System.out.print(", ");
+                }
+            }
+            System.out.println();
+            irDecoder.irClose();
+        }
+        System.out.println("library open : " + ret);
+    }
 }
