@@ -1,4 +1,4 @@
-package net.irext.decodesdk.utils;
+package net.irext.decode.sdk.utils;
 
 /**
  * Filename:       Constants.java
@@ -18,6 +18,8 @@ public class Constants {
     public static final int ERROR_CODE_INVALID_CATEGORY = 2;
     public static final int ERROR_CODE_INVALID_BRAND = 3;
     public static final int ERROR_CODE_INVALID_PARAMETER = 4;
+    public static final int ERROR_CODE_INVALID_CITY = 5;
+    public static final int ERROR_CODE_INVALID_OPERATOR = 6;
 
     public enum CategoryID {
         AIR_CONDITIONER(1),

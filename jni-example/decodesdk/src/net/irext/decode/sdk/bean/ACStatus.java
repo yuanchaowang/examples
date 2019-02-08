@@ -1,6 +1,6 @@
-package net.irext.decodesdk.bean;
+package net.irext.decode.sdk.bean;
 
-import net.irext.decodesdk.utils.Constants;
+import net.irext.decode.sdk.utils.Constants;
 
 /**
  * Filename:       ACStatus.java

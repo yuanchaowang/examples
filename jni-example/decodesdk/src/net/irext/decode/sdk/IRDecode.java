@@ -1,8 +1,8 @@
-package net.irext.decodesdk;
+package net.irext.decode.sdk;
 
-import net.irext.decodesdk.bean.ACStatus;
-import net.irext.decodesdk.bean.TemperatureRange;
-import net.irext.decodesdk.utils.Constants;
+import net.irext.decode.sdk.bean.ACStatus;
+import net.irext.decode.sdk.bean.TemperatureRange;
+import net.irext.decode.sdk.utils.Constants;
 
 
 /**

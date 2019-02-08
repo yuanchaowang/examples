@@ -1,4 +1,4 @@
-package net.irext.decodesdk.bean;
+package net.irext.decode.sdk.bean;
 
 /**
  * Filename:       TemperatureRange.java
