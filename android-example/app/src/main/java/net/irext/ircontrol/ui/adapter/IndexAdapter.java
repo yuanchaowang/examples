@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import net.irext.ircontrol.R;
-import net.irext.decodesdk.utils.Constants;
+import net.irext.sdk.utils.Constants;
 import net.irext.webapi.model.RemoteIndex;
 
 import java.util.List;

@@ -15,7 +15,7 @@ import net.irext.ircontrol.ui.activity.CreateActivity;
 import net.irext.ircontrol.ui.adapter.CategoryAdapter;
 import net.irext.ircontrol.ui.widget.PullToRefreshListView;
 import net.irext.ircontrol.utils.MessageUtil;
-import net.irext.decodesdk.utils.Constants;
+import net.irext.sdk.utils.Constants;
 import net.irext.webapi.model.Category;
 import net.irext.webapi.WebAPICallbacks.ListCategoriesCallback;
 

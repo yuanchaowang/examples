@@ -8,7 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
-import net.irext.decodesdk.utils.Constants;
+import net.irext.sdk.utils.Constants;
 
 import java.util.List;
 

@@ -14,9 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
-import net.irext.decodesdk.bean.ACStatus;
-import net.irext.decodesdk.IRDecode;
-import net.irext.decodesdk.utils.Constants;
+import net.irext.decode.sdk.bean.ACStatus;
+import net.irext.decode.sdk.IRDecode;
+import net.irext.sdk.utils.Constants;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.activity.ControlActivity;
@@ -25,7 +25,6 @@ import net.irext.ircontrol.utils.MessageUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.lang.ref.WeakReference;
 
 /**
