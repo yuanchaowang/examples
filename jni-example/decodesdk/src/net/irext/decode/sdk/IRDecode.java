@@ -37,6 +37,8 @@ public class IRDecode {
 
     private native int irACGetSupportedSwing(int acMode);
 
+    private native int irACGetSupportedWindDirection(int acMode);
+
     private static IRDecode mInstance;
 
     public static IRDecode getInstance() {
@@ -112,6 +114,11 @@ public class IRDecode {
             retSupportedSwing[i] = (supportedSwing >>> 1) & 1;
         }
         return retSupportedSwing;
+    }
+
+    public int getACSupportedWindDirection(int acMode) {
+        // how many directions supported by specific AC
+        return irACGetSupportedWindDirection(acMode);
     }
 
     public static void main(String[] args) {
