@@ -39,6 +39,11 @@ public class WebAPIs {
     private static final String DEFAULT_APP = "/irext-server";
     private static String URL_PREFIX = DEFAULT_ADDRESS + DEFAULT_APP;
 
+    // download bin from OSS
+    private static final String IR_BIN_FILE_PREFIX = "irda_";
+    private static final String IR_BIN_FILE_SUFFIX = ".bin";
+    private static final String IR_BIN_DOWNLOAD_PREFIX = "http://irext-debug.oss-cn-hangzhou.aliyuncs.com/";
+
     private static final String SERVICE_SIGN_IN = "/app/app_login";
     private static final String SERVICE_LIST_CATEGORIES = "/indexing/list_categories";
     private static final String SERVICE_LIST_BRANDS = "/indexing/list_brands";
@@ -71,6 +76,16 @@ public class WebAPIs {
             initializeInstance(address, appName);
         }
         return mInstance;
+    }
+
+    private InputStream getFileByteStreamByURL(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+
+        Response response = new OkHttpClient().newCall(request).execute();
+        return response.body().byteStream();
     }
 
     private String postToServer(String url, String json) throws IOException {
@@ -308,7 +323,8 @@ public class WebAPIs {
     @SuppressWarnings("unused")
     public void downloadBin(String remoteMap, int indexId,
                             DownloadBinCallback downloadBinCallback) {
-        String downloadURL = URL_PREFIX + SERVICE_DOWNLOAD_BIN;
+        String fileName = IR_BIN_FILE_PREFIX + remoteMap + IR_BIN_FILE_SUFFIX;
+        String downloadURL = IR_BIN_DOWNLOAD_PREFIX + fileName;
         DownloadBinaryRequest downloadBinaryRequest = new DownloadBinaryRequest();
         downloadBinaryRequest.setId(id);
         downloadBinaryRequest.setToken(token);
@@ -318,7 +334,7 @@ public class WebAPIs {
 
         if (null != bodyJson) {
             try {
-                InputStream binStream = postToServerForOctets(downloadURL, bodyJson);
+                InputStream binStream = getFileByteStreamByURL(downloadURL);
 
                 if (null != binStream) {
                     downloadBinCallback.onDownloadBinSuccess(binStream);
