@@ -53,12 +53,19 @@ lp_apply_ac_parameter apply_table[AC_APPLY_MAX] =
 };
 
 // static functions declarations
+#if !defined NO_FS
 static INT8 ir_ac_file_open(const char *file_name);
+#endif
+
 static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length);
 static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 function_code,
                                 BOOL change_wind_direction);
 static INT8 ir_ac_binary_close();
+
+#if !defined NO_FS
 static INT8 ir_tv_file_open(const char *file_name);
+#endif
+
 static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length);
 static INT8 ir_tv_binary_parse(UINT8 ir_hex_encode);
 static UINT16 ir_tv_control(UINT8 key, UINT16 *l_user_data);
@@ -118,7 +125,7 @@ INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* fi
 #else
 INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* file_name)
 {
-    return IR_DECODE_SUCCESS;
+    return IR_DECODE_SUCCEEDED;
 }
 #endif
 
@@ -206,9 +213,9 @@ void ir_lib_free_inner_buffer();
 // static function definitions
 
 //////// AC Begin ////////
+#if !defined NO_FS
 static INT8 ir_ac_file_open(const char *file_name)
 {
-#if !defined NO_FS
     size_t ret = 0;
 #if !defined WIN32
     FILE *stream = fopen(file_name, "rb");
@@ -252,9 +259,9 @@ static INT8 ir_ac_file_open(const char *file_name)
         binary_length = 0;
         return IR_DECODE_FAILED;
     }
-#endif
     return IR_DECODE_SUCCEEDED;
 }
+#endif
 
 static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length)
 {
@@ -543,9 +550,9 @@ INT8 get_supported_wind_direction(UINT8 *supported_wind_direction)
 //////// AC End ////////
 
 //////// TV Begin ////////
+#if !defined NO_FS
 static INT8 ir_tv_file_open(const char *file_name)
 {
-#if !defined NO_FS
     size_t ret = 0;
 
 #if !defined WIN32
@@ -590,9 +597,9 @@ static INT8 ir_tv_file_open(const char *file_name)
         binary_length = 0;
         return IR_DECODE_FAILED;
     }
-#endif
     return IR_DECODE_SUCCEEDED;
 }
+#endif
 
 static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length)
 {

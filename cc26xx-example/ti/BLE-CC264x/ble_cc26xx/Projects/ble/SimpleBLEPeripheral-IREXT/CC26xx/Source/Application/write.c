@@ -22,8 +22,6 @@
 
 #include <yfuns.h>
 
-_STD_BEGIN
-
 #pragma module_name = "?__write"
 
 int MyLowLevelPutchar(int x);
@@ -78,5 +76,3 @@ size_t __write(int handle, const unsigned char * buffer, size_t size)
 #endif
 
 }
-
-_STD_END
