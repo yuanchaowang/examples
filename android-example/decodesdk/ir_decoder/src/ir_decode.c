@@ -22,6 +22,8 @@ Revision log:
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
+const char* release = "0.2.0";
+
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
 #else
@@ -31,7 +33,7 @@ struct tag_head tags[TAG_COUNT_FOR_PROTOCOL];
 UINT8 *ir_hex_code = NULL;
 UINT8 ir_hex_len = 0;
 
-UINT8 byteArray[PROTOCOL_SIZE] = {0};
+UINT8 byteArray[PROTOCOL_SIZE] = { 0 };
 
 size_t binary_length = 0;
 UINT8 *binary_content = NULL;
@@ -118,7 +120,7 @@ INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* fi
 #else
 INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* file_name)
 {
-    return IR_DECODE_SUCCESS;
+    return IR_DECODE_SUCCEEDED;
 }
 #endif
 
@@ -168,7 +170,8 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
 }
 
 
-UINT16 ir_decode(UINT8 key_code, UINT16* user_data, t_remote_ac_status* ac_status, BOOL change_wind_direction)
+UINT16 ir_decode(UINT8 key_code, UINT16* user_data,
+        t_remote_ac_status* ac_status, BOOL change_wind_direction)
 {
     if (IR_TYPE_COMMANDS == ir_binary_type)
     {
@@ -180,6 +183,13 @@ UINT16 ir_decode(UINT8 key_code, UINT16* user_data, t_remote_ac_status* ac_statu
         {
             return 0;
         }
+        ir_printf("ac status is not null in decode core : power = %d, mode = %d, "
+                  "temp = %d, wind_dir = %d, wind_speed = %d, "
+                  "keycode = %d, change_wind_direction = %d\n",
+                  ac_status->ac_power, ac_status->ac_mode,
+                  ac_status->ac_temp, ac_status->ac_wind_dir,
+                  ac_status->ac_wind_speed,
+                  key_code, change_wind_direction);
         return ir_ac_control(*ac_status, user_data, key_code, change_wind_direction);
     }
 }
@@ -189,10 +199,12 @@ INT8 ir_close()
 {
     if (IR_TYPE_COMMANDS == ir_binary_type)
     {
+        ir_printf("tv binary close\n");
         return ir_tv_binary_close();
     }
     else
     {
+        ir_printf("ac binary close\n");
         return ir_ac_binary_close();
     }
 }
@@ -639,6 +651,25 @@ static INT8 ir_tv_binary_close()
 }
 //////// TV End ////////
 
+// combo decode for JNI which means call open, decode and then close in one JNI call
+UINT16 ir_decode_combo(const UINT8 category, const UINT8 sub_category,
+                       UINT8* binary, UINT16 binary_length,
+                       UINT8 key_code, UINT16* user_data,
+                       t_remote_ac_status* ac_status, BOOL change_wind_direction)
+{
+    UINT16 decoded_length = 0;
+    if (IR_DECODE_SUCCEEDED ==
+        ir_binary_open(category, sub_category, binary, binary_length))
+    {
+        decoded_length = ir_decode(key_code, user_data, ac_status, change_wind_direction);
+        ir_close();
+        return decoded_length;
+    }
+    else
+    {
+        return 0;
+    }
+}
 
 #if (defined BOARD_PC || defined BOARD_PC_DLL)
 void ir_lib_free_inner_buffer()
