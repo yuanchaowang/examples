@@ -22,7 +22,7 @@ Revision log:
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
-const char* release = "0.2.0";
+const char* release = "0.2.1";
 
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
@@ -278,7 +278,7 @@ static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length)
     return IR_DECODE_SUCCEEDED;
 }
 
-static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 function_code,
+static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 key_code,
                          BOOL change_wind_direction)
 {
     UINT16 time_length = 0;
@@ -286,6 +286,36 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
 #if defined BOARD_PC
     UINT16 i = 0;
 #endif
+
+    UINT8 function_code = 0;
+
+    switch(key_code)
+    {
+        case 0:
+            function_code = AC_FUNCTION_POWER;
+            break;
+        case 1:
+            function_code = AC_FUNCTION_MODE;
+            break;
+        case 2:
+            function_code = AC_FUNCTION_TEMPERATURE_UP;
+            break;
+        case 3:
+            function_code = AC_FUNCTION_TEMPERATURE_DOWN;
+            break;
+        case 7:
+            function_code = AC_FUNCTION_TEMPERATURE_UP;
+            break;
+        case 8:
+            function_code = AC_FUNCTION_TEMPERATURE_DOWN;
+            break;
+        case 9:
+            function_code = AC_FUNCTION_WIND_SPEED;
+            break;
+        case 10:
+            function_code = AC_FUNCTION_WIND_SWING;
+            break;
+    }
 
     if (0 == context->default_code.len)
     {
