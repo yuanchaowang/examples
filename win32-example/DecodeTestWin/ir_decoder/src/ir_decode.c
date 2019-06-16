@@ -22,6 +22,8 @@ Revision log:
 struct ir_bin_buffer binary_file;
 struct ir_bin_buffer *p_ir_buffer = &binary_file;
 
+const char* release = "0.2.1";
+
 #if defined USE_DYNAMIC_TAG
 struct tag_head *tags;
 #else
@@ -31,7 +33,7 @@ struct tag_head tags[TAG_COUNT_FOR_PROTOCOL];
 UINT8 *ir_hex_code = NULL;
 UINT8 ir_hex_len = 0;
 
-UINT8 byteArray[PROTOCOL_SIZE] = {0};
+UINT8 byteArray[PROTOCOL_SIZE] = { 0 };
 
 size_t binary_length = 0;
 UINT8 *binary_content = NULL;
@@ -53,12 +55,19 @@ lp_apply_ac_parameter apply_table[AC_APPLY_MAX] =
 };
 
 // static functions declarations
+#if !defined NO_FS
 static INT8 ir_ac_file_open(const char *file_name);
+#endif
+
 static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length);
 static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 function_code,
                             BOOL change_wind_direction);
 static INT8 ir_ac_binary_close();
+
+#if !defined NO_FS
 static INT8 ir_tv_file_open(const char *file_name);
+#endif
+
 static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length);
 static INT8 ir_tv_binary_parse(UINT8 ir_hex_encode);
 static UINT16 ir_tv_control(UINT8 key, UINT16 *l_user_data);
@@ -118,7 +127,7 @@ INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* fi
 #else
 INT8 ir_file_open(const UINT8 category, const UINT8 sub_category, const char* file_name)
 {
-    return IR_DECODE_SUCCESS;
+    return IR_DECODE_SUCCEEDED;
 }
 #endif
 
@@ -168,7 +177,8 @@ INT8 ir_binary_open(const UINT8 category, const UINT8 sub_category, UINT8* binar
 }
 
 
-UINT16 ir_decode(UINT8 key_code, UINT16* user_data, t_remote_ac_status* ac_status, BOOL change_wind_direction)
+UINT16 ir_decode(UINT8 key_code, UINT16* user_data,
+        t_remote_ac_status* ac_status, BOOL change_wind_direction)
 {
     if (IR_TYPE_COMMANDS == ir_binary_type)
     {
@@ -180,6 +190,13 @@ UINT16 ir_decode(UINT8 key_code, UINT16* user_data, t_remote_ac_status* ac_statu
         {
             return 0;
         }
+        ir_printf("ac status is not null in decode core : power = %d, mode = %d, "
+                  "temp = %d, wind_dir = %d, wind_speed = %d, "
+                  "keycode = %d, change_wind_direction = %d\n",
+                  ac_status->ac_power, ac_status->ac_mode,
+                  ac_status->ac_temp, ac_status->ac_wind_dir,
+                  ac_status->ac_wind_speed,
+                  key_code, change_wind_direction);
         return ir_ac_control(*ac_status, user_data, key_code, change_wind_direction);
     }
 }
@@ -189,10 +206,12 @@ INT8 ir_close()
 {
     if (IR_TYPE_COMMANDS == ir_binary_type)
     {
+        ir_printf("tv binary close\n");
         return ir_tv_binary_close();
     }
     else
     {
+        ir_printf("ac binary close\n");
         return ir_ac_binary_close();
     }
 }
@@ -206,9 +225,9 @@ void ir_lib_free_inner_buffer();
 // static function definitions
 
 //////// AC Begin ////////
+#if !defined NO_FS
 static INT8 ir_ac_file_open(const char *file_name)
 {
-#if !defined NO_FS
     size_t ret = 0;
 #if !defined WIN32
     FILE *stream = fopen(file_name, "rb");
@@ -252,9 +271,9 @@ static INT8 ir_ac_file_open(const char *file_name)
         binary_length = 0;
         return IR_DECODE_FAILED;
     }
-#endif
     return IR_DECODE_SUCCEEDED;
 }
+#endif
 
 static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length)
 {
@@ -266,7 +285,7 @@ static INT8 ir_ac_binary_open(UINT8 *binary, UINT16 binary_length)
     return IR_DECODE_SUCCEEDED;
 }
 
-static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 function_code,
+static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UINT8 key_code,
                             BOOL change_wind_direction)
 {
     UINT16 time_length = 0;
@@ -274,6 +293,36 @@ static UINT16 ir_ac_control(t_remote_ac_status ac_status, UINT16 *user_data, UIN
 #if defined BOARD_PC
     UINT16 i = 0;
 #endif
+
+    UINT8 function_code = 0;
+
+    switch(key_code)
+    {
+        case 0:
+            function_code = AC_FUNCTION_POWER;
+            break;
+        case 1:
+            function_code = AC_FUNCTION_MODE;
+            break;
+        case 2:
+            function_code = AC_FUNCTION_TEMPERATURE_UP;
+            break;
+        case 3:
+            function_code = AC_FUNCTION_TEMPERATURE_DOWN;
+            break;
+        case 7:
+            function_code = AC_FUNCTION_TEMPERATURE_UP;
+            break;
+        case 8:
+            function_code = AC_FUNCTION_TEMPERATURE_DOWN;
+            break;
+        case 9:
+            function_code = AC_FUNCTION_WIND_SPEED;
+            break;
+        case 10:
+            function_code = AC_FUNCTION_WIND_SWING;
+            break;
+    }
 
     if (0 == context->default_code.len)
     {
@@ -543,9 +592,9 @@ INT8 get_supported_wind_direction(UINT8 *supported_wind_direction)
 //////// AC End ////////
 
 //////// TV Begin ////////
+#if !defined NO_FS
 static INT8 ir_tv_file_open(const char *file_name)
 {
-#if !defined NO_FS
     size_t ret = 0;
 
 #if !defined WIN32
@@ -590,9 +639,9 @@ static INT8 ir_tv_file_open(const char *file_name)
         binary_length = 0;
         return IR_DECODE_FAILED;
     }
-#endif
     return IR_DECODE_SUCCEEDED;
 }
+#endif
 
 static INT8 ir_tv_binary_open(UINT8 *binary, UINT16 binary_length)
 {
@@ -639,6 +688,25 @@ static INT8 ir_tv_binary_close()
 }
 //////// TV End ////////
 
+// combo decode for JNI which means call open, decode and then close in one JNI call
+UINT16 ir_decode_combo(const UINT8 category, const UINT8 sub_category,
+                       UINT8* binary, UINT16 binary_length,
+                       UINT8 key_code, UINT16* user_data,
+                       t_remote_ac_status* ac_status, BOOL change_wind_direction)
+{
+    UINT16 decoded_length = 0;
+    if (IR_DECODE_SUCCEEDED ==
+        ir_binary_open(category, sub_category, binary, binary_length))
+    {
+        decoded_length = ir_decode(key_code, user_data, ac_status, change_wind_direction);
+        ir_close();
+        return decoded_length;
+    }
+    else
+    {
+        return 0;
+    }
+}
 
 #if (defined BOARD_PC || defined BOARD_PC_DLL)
 void ir_lib_free_inner_buffer()

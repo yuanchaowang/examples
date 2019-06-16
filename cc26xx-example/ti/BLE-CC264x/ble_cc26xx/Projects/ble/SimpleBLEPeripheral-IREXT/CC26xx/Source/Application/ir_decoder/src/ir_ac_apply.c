@@ -495,6 +495,11 @@ static INT8 apply_checksum_spec_byte_onebyte(UINT8 *ac_code, t_tag_checksum_data
 
 static UINT8 has_function(struct ac_protocol *protocol, UINT8 function)
 {
+    if (function < AC_FUNCTION_POWER || function > AC_FUNCTION_WIND_FIX)
+    {
+        return FALSE;
+    }
+
     if (0 != protocol->function1.len)
     {
         if (0 != protocol->function1.comp_data[function - 1].seg_len)
@@ -517,6 +522,11 @@ static UINT8 has_function(struct ac_protocol *protocol, UINT8 function)
 INT8 apply_function(struct ac_protocol *protocol, UINT8 function)
 {
     UINT16 i = 0;
+
+    if (function < AC_FUNCTION_POWER || function > AC_FUNCTION_WIND_FIX)
+    {
+        return IR_DECODE_FAILED;
+    }
 
     // function index starts from 1 (AC_FUNCTION_POWER), do -1 operation at first
     if (0 == protocol->function1.len)

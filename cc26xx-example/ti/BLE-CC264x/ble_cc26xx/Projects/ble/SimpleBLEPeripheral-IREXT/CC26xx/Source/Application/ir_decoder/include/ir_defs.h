@@ -32,6 +32,11 @@ extern "C"
 #define FORMAT_HEX 16
 #define FORMAT_DECIMAL 10
 
+// #define USE_DYNAMIC_TAG 1
+
+#if defined USE_DYNAMIC_TAG
+#include <stdlib.h>
+#endif
 
 typedef unsigned char UINT8;
 typedef signed char INT8;
@@ -54,12 +59,13 @@ void noprint(const char *fmt, ...);
 #define ir_memcpy(A, B, C) memcpy(A, B, C)
 #define ir_memset(A, B, C) memset(A, B, C)
 #define ir_strlen(A) strlen(A)
-#if (defined BOARD_PC) && (!defined BOARD_PC_JNI)
+#if ((defined BOARD_PC) || (defined BOARD_PC_JNI)) && (defined DEBUG)
 #define ir_printf printf
 #else
 #define ir_printf noprint
 #endif
 #define USER_DATA_SIZE 1636
+// #define USER_DATA_SIZE 4096
 
 #ifdef __cplusplus
 }
