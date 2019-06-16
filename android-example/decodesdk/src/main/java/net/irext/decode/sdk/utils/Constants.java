@@ -1,4 +1,4 @@
-package net.irext.sdk.utils;
+package net.irext.decode.sdk.utils;
 
 /**
  * Filename:       Constants.java
@@ -14,10 +14,24 @@ public class Constants {
 
     public static final int ERROR_CODE_SUCCESS = 0;
     public static final int ERROR_CODE_NETWORK_ERROR = -1;
+
     public static final int ERROR_CODE_AUTH_FAILURE = 1;
     public static final int ERROR_CODE_INVALID_CATEGORY = 2;
     public static final int ERROR_CODE_INVALID_BRAND = 3;
     public static final int ERROR_CODE_INVALID_PARAMETER = 4;
+    public static final int ERROR_CODE_INVALID_CITY = 5;
+    public static final int ERROR_CODE_INVALID_OPERATOR = 6;
+
+    public static final int ERROR_CODE_INVALID_SESSION = 20;
+
+    public static final String ERROR_CODE_SUCESS_TEXT = "success";
+    public static final String ERROR_CODE_NETWORK_ERROR_TEXT = "network error";
+    public static final String ERROR_CODE_AUTH_FAILUTRE_TEXT = "auth failure";
+    public static final String ERROR_CODE_INVALID_CATEGORY_TEXT = "invalid category";
+    public static final String ERROR_CODE_INVALID_BRAND_TEXT = "invalid brand";
+    public static final String ERROR_CODE_INVALID_PARAMETER_TEXT = "invalid parameter";
+
+    public static final String ERROR_CODE_INVALID_SESSION_TEXT = "invalid decode session";
 
     public enum CategoryID {
         AIR_CONDITIONER(1),

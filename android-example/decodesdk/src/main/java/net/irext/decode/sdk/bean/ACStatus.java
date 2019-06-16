@@ -1,6 +1,6 @@
 package net.irext.decode.sdk.bean;
 
-import net.irext.sdk.utils.Constants;
+import net.irext.decode.sdk.utils.Constants;
 
 /**
  * Filename:       ACStatus.java
@@ -48,67 +48,67 @@ public class ACStatus {
         this.acTimer = acTimer;
     }
 
-    public int getACPower() {
+    public int getAcPower() {
         return acPower;
     }
 
-    public void setACPower(int acPower) {
+    public void setAcPower(int acPower) {
         this.acPower = acPower;
     }
 
-    public int getACTemp() {
+    public int getAcTemp() {
         return acTemp;
     }
 
-    public void setACTemp(int acTemp) {
+    public void setAcTemp(int acTemp) {
         this.acTemp = acTemp;
     }
 
-    public int getACMode() {
+    public int getAcMode() {
         return acMode;
     }
 
-    public void setACMode(int acMode) {
+    public void setAcMode(int acMode) {
         this.acMode = acMode;
     }
 
-    public int getACWindDir() {
+    public int getAcWindDir() {
         return acWindDir;
     }
 
-    public void setACWindDir(int acWindDir) {
+    public void setAcWindDir(int acWindDir) {
         this.acWindDir = acWindDir;
     }
 
-    public int getACWindSpeed() {
+    public int getAcWindSpeed() {
         return acWindSpeed;
     }
 
-    public void setACWindSpeed(int acWindSpeed) {
+    public void setAcWindSpeed(int acWindSpeed) {
         this.acWindSpeed = acWindSpeed;
     }
 
-    public int getACDisplay() {
+    public int getAcDisplay() {
         return acDisplay;
     }
 
-    public void setACDisplay(int acDisplay) {
+    public void setAcDisplay(int acDisplay) {
         this.acDisplay = acDisplay;
     }
 
-    public int getACSleep() {
+    public int getAcSleep() {
         return acSleep;
     }
 
-    public void setACSleep(int acSleep) {
+    public void setAcSleep(int acSleep) {
         this.acSleep = acSleep;
     }
 
-    public int getACTimer() {
+    public int getAcTimer() {
         return acTimer;
     }
 
-    public void setACTimer(int acTimer) {
+    public void setAcTimer(int acTimer) {
         this.acTimer = acTimer;
     }
 

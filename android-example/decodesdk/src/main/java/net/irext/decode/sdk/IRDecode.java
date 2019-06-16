@@ -2,7 +2,7 @@ package net.irext.decode.sdk;
 
 import net.irext.decode.sdk.bean.ACStatus;
 import net.irext.decode.sdk.bean.TemperatureRange;
-import net.irext.sdk.utils.Constants;
+import net.irext.decode.sdk.utils.Constants;
 
 /**
  * Filename:       IRDecode.java
@@ -18,9 +18,7 @@ public class IRDecode {
 
     private static final String TAG = IRDecode.class.getSimpleName();
 
-    static {
-        System.loadLibrary("irdecode");
-    }
+    private static Object mSync = new Object();
 
     private native int irOpen(int category, int subCate, String fileName);
 
@@ -38,6 +36,8 @@ public class IRDecode {
 
     private native int irACGetSupportedSwing(int acMode);
 
+    private native int irACGetSupportedWindDirection(int acMode);
+
     private static IRDecode mInstance;
 
     public static IRDecode getInstance() {
@@ -48,7 +48,9 @@ public class IRDecode {
     }
 
     private IRDecode() {
-
+        String libPath = "/data/irext/libirda_decoder.so";
+        System.out.println("loading decode library " + libPath);
+        System.load(libPath);
     }
 
     public int openFile(int category, int subCate, String fileName) {
@@ -60,10 +62,14 @@ public class IRDecode {
     }
 
     public int[] decodeBinary(int keyCode, ACStatus acStatus, int changeWindDir) {
-        if (null == acStatus) {
-            acStatus = new ACStatus();
+        int[] decoded;
+        synchronized (mSync) {
+            if (null == acStatus) {
+                acStatus = new ACStatus();
+            }
+            decoded = irDecode(keyCode, acStatus, changeWindDir);
         }
-        return irDecode(keyCode, acStatus, changeWindDir);
+        return decoded;
     }
 
     public void closeBinary() {
@@ -76,7 +82,7 @@ public class IRDecode {
 
     public int[] getACSupportedMode() {
         // cool, heat, auto, fan, de-humidification
-        int []retSupportedMode = {0, 0, 0, 0, 0};
+        int[] retSupportedMode = {0, 0, 0, 0, 0};
         int supportedMode = irACGetSupportedMode();
         for (int i = Constants.ACMode.MODE_COOL.getValue(); i <=
                 Constants.ACMode.MODE_DEHUMIDITY.getValue(); i++) {
@@ -87,7 +93,7 @@ public class IRDecode {
 
     public int[] getACSupportedWindSpeed(int acMode) {
         // auto, low, medium, high
-        int []retSupportedWindSpeed = {0, 0, 0, 0};
+        int[] retSupportedWindSpeed = {0, 0, 0, 0};
         int supportedWindSpeed = irACGetSupportedWindSpeed(acMode);
         for (int i = Constants.ACWindSpeed.SPEED_AUTO.getValue();
              i <= Constants.ACWindSpeed.SPEED_HIGH.getValue();
@@ -99,7 +105,7 @@ public class IRDecode {
 
     public int[] getACSupportedSwing(int acMode) {
         // swing-on, swing-off
-        int []retSupportedSwing= {0, 0};
+        int[] retSupportedSwing = {0, 0};
         int supportedSwing = irACGetSupportedSwing(acMode);
         for (int i = Constants.ACSwing.SWING_ON.getValue();
              i <= Constants.ACSwing.SWING_OFF.getValue();
@@ -107,5 +113,10 @@ public class IRDecode {
             retSupportedSwing[i] = (supportedSwing >>> 1) & 1;
         }
         return retSupportedSwing;
+    }
+
+    public int getACSupportedWindDirection(int acMode) {
+        // how many directions supported by specific AC
+        return irACGetSupportedWindDirection(acMode);
     }
 }

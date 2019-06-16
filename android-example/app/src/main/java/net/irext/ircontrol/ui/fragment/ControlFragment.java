@@ -14,9 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
-import net.irext.decode.sdk.bean.ACStatus;
 import net.irext.decode.sdk.IRDecode;
-import net.irext.sdk.utils.Constants;
+import net.irext.decode.sdk.bean.ACStatus;
+import net.irext.decode.sdk.utils.Constants;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
 import net.irext.ircontrol.ui.activity.ControlActivity;
@@ -162,14 +162,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         /* decode SDK - decode according to key code */
         if (Constants.CategoryID.AIR_CONDITIONER.getValue() ==
                 mCurrentRemoteControl.getCategoryId()) {
-            acStatus.setACPower(Constants.ACPower.POWER_OFF.getValue());
-            acStatus.setACMode(Constants.ACMode.MODE_COOL.getValue());
-            acStatus.setACTemp(Constants.ACTemperature.TEMP_24.getValue());
-            acStatus.setACWindSpeed(Constants.ACWindSpeed.SPEED_AUTO.getValue());
-            acStatus.setACWindDir(Constants.ACSwing.SWING_ON.getValue());
-            acStatus.setACDisplay(0);
-            acStatus.setACTimer(0);
-            acStatus.setACSleep(0);
+            acStatus.setAcPower(Constants.ACPower.POWER_OFF.getValue());
+            acStatus.setAcMode(Constants.ACMode.MODE_COOL.getValue());
+            acStatus.setAcTemp(Constants.ACTemperature.TEMP_24.getValue());
+            acStatus.setAcWindSpeed(Constants.ACWindSpeed.SPEED_AUTO.getValue());
+            acStatus.setAcWindDir(Constants.ACSwing.SWING_ON.getValue());
+            acStatus.setAcDisplay(0);
+            acStatus.setAcTimer(0);
+            acStatus.setAcSleep(0);
 
             switch(keyCode) {
                 case KEY_POWER:

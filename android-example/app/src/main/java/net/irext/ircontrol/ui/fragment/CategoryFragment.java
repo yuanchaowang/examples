@@ -9,13 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 
+import net.irext.decode.sdk.utils.Constants;
 import net.irext.ircontrol.IRApplication;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.ui.activity.CreateActivity;
 import net.irext.ircontrol.ui.adapter.CategoryAdapter;
 import net.irext.ircontrol.ui.widget.PullToRefreshListView;
 import net.irext.ircontrol.utils.MessageUtil;
-import net.irext.sdk.utils.Constants;
 import net.irext.webapi.model.Category;
 import net.irext.webapi.WebAPICallbacks.ListCategoriesCallback;
 

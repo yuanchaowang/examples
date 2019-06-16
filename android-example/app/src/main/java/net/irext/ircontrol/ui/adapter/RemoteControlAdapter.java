@@ -6,10 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
+import net.irext.decode.sdk.utils.Constants;
 import net.irext.ircontrol.R;
 import net.irext.ircontrol.bean.RemoteControl;
-import net.irext.sdk.utils.Constants;
-
 import java.util.List;
 
 /**
